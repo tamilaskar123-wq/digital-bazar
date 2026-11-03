@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#123c2c"><title>DIGITAL BAZAR</title>
+<style>
+:root{--g:#123c2c;--g2:#1e684b;--bg:#f4f7f5;--line:#e1e9e4}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#1d2923;font-family:Arial,sans-serif}
+header{background:var(--g);color:white;padding:20px 16px;text-align:center}header h1{margin:0;font-size:27px;letter-spacing:1px}header p{margin:7px 0 0;color:#d8e9df;font-size:13px}
+main{max-width:960px;margin:auto;padding:16px 14px 90px}.screen{display:none}.screen.active{display:block}
+h2{color:var(--g);font-size:21px}.muted{color:#68766e;font-size:13px;line-height:1.5}
+input,textarea,select{width:100%;padding:12px;border:1px solid #ccd8d0;border-radius:9px;font-size:15px;margin:6px 0 12px;background:white}
+label{font-size:13px;font-weight:bold;color:#405248}.search{padding:14px 16px;border-radius:13px}
+.categories{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.category{background:white;border:1px solid var(--line);border-radius:13px;padding:17px 10px;text-align:center;font-weight:bold;color:var(--g);cursor:pointer}
+.products{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.product,.panel,.order{background:white;border:1px solid var(--line);border-radius:13px;overflow:hidden;margin:12px 0}
+.product img{width:100%;height:130px;object-fit:cover;background:#e8eee9}.info,.panel,.order{padding:12px}.product h3{font-size:15px;margin:0 0 6px}.price{font-weight:bold;color:var(--g2)}
+button{border:0;border-radius:9px;padding:11px 13px;background:var(--g);color:white;font-weight:bold;cursor:pointer}button.secondary{background:#e8f0eb;color:var(--g)}button.danger{background:#a93636}
+.actions{display:flex;gap:8px;flex-wrap:wrap}.pill{display:inline-block;padding:5px 9px;border-radius:20px;background:#e8f0eb;color:var(--g);font-size:12px}
+.bottom{position:fixed;bottom:0;left:0;right:0;background:white;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(3,1fr);padding:7px 5px calc(7px + env(safe-area-inset-bottom));z-index:10}
+.bottom button{background:white;color:var(--g);padding:9px 3px;font-size:12px}.bottom button.active{background:#e8f0eb}
+.hidden{display:none!important}hr{border:0;border-top:1px solid var(--line);margin:16px 0}
+@media(min-width:650px){.categories{grid-template-columns:repeat(4,1fr)}.products{grid-template-columns:repeat(3,minmax(0,1fr))}.product img{height:165px}}
+</style></head>
+<body>
+<header><h1>DIGITAL BAZAR</h1><p>Your daily shopping place</p></header>
+<main>
+<section id="home" class="screen active">
+<input id="searchBox" class="search" placeholder="Search products..." oninput="renderProducts()" aria-label="Search products">
+<h2>Shop by Category</h2><div class="categories" id="categoryGrid"></div>
+<div class="actions" style="margin:14px 0"><button class="secondary" onclick="chooseCategory('All')">All products</button></div>
+<h2 id="productsHeading">Products</h2><div id="productGrid" class="products"></div>
+<p class="muted" id="emptyProducts">No products added yet. The shop owner can add product photos, names and prices from the Admin section.</p>
+</section>
+<section id="categories" class="screen"><h2>Categories</h2><div class="categories" id="categoryGrid2"></div><h2 id="categoryHeading">All products</h2><div id="categoryProductGrid" class="products"></div></section>
+<section id="orders" class="screen">
+<h2>My Orders</h2><div class="panel"><p class="muted">Sign in to view your orders. Order history will be available after a secure backend is connected.</p><button onclick="showScreen('profile')">Go to Profile / Login</button></div>
+<h2>Return / Exchange</h2><div class="panel"><label>Order ID</label><input id="returnOrderId" placeholder="Enter order ID"><label>Request type</label><select id="returnType"><option>Online return</option><option>Offline return at shop</option><option>Exchange</option></select><label>Reason</label><textarea id="returnReason" rows="3" placeholder="Describe the issue"></textarea><button onclick="sendReturn()">Submit return request</button><p class="muted">This demo keeps the request on this device only. Online processing needs a backend.</p></div>
+</section>
+<section id="cart" class="screen"><h2>My Cart</h2><div id="cartList"></div><h3>Total: ₹<span id="cartTotal">0</span></h3><button onclick="showScreen('checkout')">Continue to Checkout</button></section>
+<section id="checkout" class="screen">
+<h2>Checkout</h2><label>Full name</label><input id="buyerName" placeholder="Your name"><label>Mobile number</label><input id="buyerPhone" inputmode="numeric" maxlength="10" placeholder="10-digit mobile number"><label>Full address</label><textarea id="buyerAddress" rows="3" placeholder="House, village, PIN code"></textarea>
+<label>Delivery option</label><select id="deliveryOption"><option>Online delivery (account details to be added by shop owner)</option><option>Cash on Delivery</option></select>
+<label>Payment option</label><select id="paymentOption"><option>Cash on Delivery</option><option>Online payment (not configured yet)</option></select>
+<button onclick="placeOrder()">Prepare order on WhatsApp</button><p class="muted">Online payment is not active in this starter file. Do not send money until the shop owner provides a verified payment method.</p>
+</section>
+<section id="profile" class="screen"><h2>My Profile</h2>
+<div class="panel"><h3>Customer Login</h3><label>Email address</label><input id="loginEmail" type="email" placeholder="Enter your email"><button onclick="emailLogin()">Request email OTP / link</button><p class="muted" id="loginStatus">Email OTP requires a newly configured authentication provider and backend project.</p></div>
+<div class="panel"><h3>Profile menu</h3><p>Help Center</p><p>Shared Product</p><p>DIGITAL BAZAR Balance</p><p>Settings</p><p>Logout</p><p class="muted">These are display placeholders until account and wallet services are connected.</p></div>
+<div class="panel"><h3>Admin</h3><p class="muted">Add product name, category, photo and price in this browser demo. Data is stored only on this device; it is not shared with customers yet.</p><label>Admin demo access code</label><input id="adminCode" type="password" placeholder="Create a local demo code"><button class="secondary" onclick="openAdmin()">Open product manager</button></div>
+<div id="adminPanel" class="panel hidden"><h3>Product Manager (local demo)</h3><label>Product name</label><input id="newName" placeholder="Product name"><label>Category</label><select id="newCategory"><option>Grocery</option><option>Stationery</option><option>Electronics</option><option>Library</option></select><label>Price (₹)</label><input id="newPrice" type="number" min="0" placeholder="Price"><label>Product photo</label><input id="newPhoto" type="file" accept="image/*"><button onclick="addProduct()">Save product on this device</button><hr><h3>Existing products</h3><div id="adminProductList"></div></div>
+</section></main>
+<nav class="bottom"><button id="nav-home" class="active" onclick="showScreen('home')">⌂<br>Home</button><button id="nav-categories" onclick="showScreen('categories')">▦<br>Categories</button><button id="nav-orders" onclick="showScreen('orders')">▤<br>My Orders</button></nav>
+<script>
+const CATEGORIES=[{name:"Grocery",icon:"🛒"},{name:"Stationery",icon:"✏️"},{name:"Electronics",icon:"🔌"},{name:"Library",icon:"📚"}];
+let products=JSON.parse(localStorage.getItem("db_products")||"[]"),cart=JSON.parse(localStorage.getItem("db_cart")||"[]"),activeCategory="All";
+function save(){localStorage.setItem("db_products",JSON.stringify(products));localStorage.setItem("db_cart",JSON.stringify(cart))}
+function showScreen(id){document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));document.getElementById(id).classList.add("active");document.querySelectorAll(".bottom button").forEach(x=>x.classList.remove("active"));let n=document.getElementById("nav-"+id);if(n)n.classList.add("active");if(id==="cart")renderCart();if(id==="categories")renderCategoryProducts();if(id==="profile")renderAdminProducts()}
+function categoryMarkup(target){document.getElementById(target).innerHTML=CATEGORIES.map(c=>`<button class="category" onclick="chooseCategory('${c.name}')">${c.icon}<br>${c.name}</button>`).join("")}
+function chooseCategory(c){activeCategory=c;document.getElementById("searchBox").value="";showScreen("home");document.getElementById("productsHeading").textContent=c==="All"?"All Products":c;renderProducts()}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function productCards(items){return items.map(p=>`<article class="product"><img src="${p.photo||'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22180%22%3E%3Crect width=%22300%22 height=%22180%22 fill=%22%23e8eee9%22/%3E%3Ctext x=%22150%22 y=%2295%22 text-anchor=%22middle%22 font-size=%2240%22%3E%F0%9F%9B%8D%EF%B8%8F%3C/text%3E%3C/svg%3E'}" alt="${escapeHtml(p.name)}"><div class="info"><h3>${escapeHtml(p.name)}</h3><span class="pill">${escapeHtml(p.category)}</span><p class="price">₹${Number(p.price).toFixed(2)}</p><button onclick="addToCart('${p.id}')">Add to Cart</button></div></article>`).join("")}
+function renderProducts(){let q=document.getElementById("searchBox").value.trim().toLowerCase(),list=products.filter(p=>(activeCategory==="All"||p.category===activeCategory)&&p.name.toLowerCase().includes(q));document.getElementById("productGrid").innerHTML=productCards(list);document.getElementById("emptyProducts").classList.toggle("hidden",list.length>0)}
+function renderCategoryProducts(){let list=products.filter(p=>activeCategory==="All"||p.category===activeCategory);document.getElementById("categoryHeading").textContent=activeCategory==="All"?"All products":activeCategory;document.getElementById("categoryProductGrid").innerHTML=productCards(list)||'<p class="muted">No products added yet.</p>'}
+function addToCart(id){let p=products.find(x=>x.id===id);if(!p)return;let item=cart.find(x=>x.id===id);if(item)item.qty++;else cart.push({id:p.id,name:p.name,price:p.price,qty:1});save();alert("Added to cart")}
+function renderCart(){document.getElementById("cartList").innerHTML=cart.map(x=>`<div class="order"><b>${escapeHtml(x.name)}</b><p>₹${x.price} × ${x.qty}</p><div class="actions"><button class="secondary" onclick="qty('${x.id}',-1)">−</button><button class="secondary" onclick="qty('${x.id}',1)">+</button><button class="danger" onclick="removeCart('${x.id}')">Remove</button></div></div>`).join("")||'<p class="muted">Your cart is empty.</p>';document.getElementById("cartTotal").textContent=cart.reduce((s,x)=>s+x.price*x.qty,0).toFixed(2)}
+function qty(id,n){let x=cart.find(a=>a.id===id);if(!x)return;x.qty+=n;if(x.qty<1)removeCart(id);else{save();renderCart()}}
+function removeCart(id){cart=cart.filter(x=>x.id!==id);save();renderCart()}
+function placeOrder(){if(!cart.length){alert("Your cart is empty");return}let name=document.getElementById("buyerName").value.trim(),phone=document.getElementById("buyerPhone").value.trim(),address=document.getElementById("buyerAddress").value.trim();if(!name||!/^[0-9]{10}$/.test(phone)||!address){alert("Enter your name, valid 10-digit phone and full address.");return}let total=cart.reduce((s,x)=>s+x.price*x.qty,0),msg=`DIGITAL BAZAR ORDER\nName: ${name}\nPhone: ${phone}\nAddress: ${address}\nDelivery: ${document.getElementById("deliveryOption").value}\nPayment: ${document.getElementById("paymentOption").value}\n\n${cart.map(x=>`${x.name} x ${x.qty} = Rs ${x.price*x.qty}`).join("\n")}\nTotal: Rs ${total}`;window.open("https://wa.me/?text="+encodeURIComponent(msg),"_blank")}
+function sendReturn(){let id=document.getElementById("returnOrderId").value.trim(),reason=document.getElementById("returnReason").value.trim();if(!id||!reason){alert("Enter order ID and reason.");return}alert("Return request prepared locally. Online submission needs backend connection.")}
+function emailLogin(){let email=document.getElementById("loginEmail").value.trim();if(!email){alert("Enter your email");return}document.getElementById("loginStatus").textContent="Email login is not connected yet. Configure a new authentication provider before using real OTP."}
+function openAdmin(){let code=document.getElementById("adminCode").value;if(!code){alert("Enter a local demo code.");return}sessionStorage.setItem("db_demo_admin",code);document.getElementById("adminPanel").classList.remove("hidden");renderAdminProducts()}
+function addProduct(){let name=document.getElementById("newName").value.trim(),category=document.getElementById("newCategory").value,price=Number(document.getElementById("newPrice").value),file=document.getElementById("newPhoto").files[0];if(!name||!Number.isFinite(price)||price<0){alert("Enter product name and valid price.");return}const done=photo=>{products.push({id:"p"+Date.now(),name,category,price,photo});save();document.getElementById("newName").value="";document.getElementById("newPrice").value="";document.getElementById("newPhoto").value="";renderProducts();renderCategoryProducts();renderAdminProducts();alert("Saved on this device only.")};if(file){let r=new FileReader();r.onload=e=>done(e.target.result);r.readAsDataURL(file)}else done("")}
+function renderAdminProducts(){let el=document.getElementById("adminProductList");if(!el)return;el.innerHTML=products.map(p=>`<div class="order"><b>${escapeHtml(p.name)}</b> — ₹${p.price}<div class="actions"><button class="secondary" onclick="editPrice('${p.id}')">Change price</button><button class="danger" onclick="deleteProduct('${p.id}')">Delete</button></div></div>`).join("")||'<p class="muted">No products yet.</p>'}
+function editPrice(id){let p=products.find(x=>x.id===id);if(!p)return;let v=prompt("New price (₹)",p.price);if(v===null)return;let n=Number(v);if(!Number.isFinite(n)||n<0){alert("Invalid price");return}p.price=n;save();renderProducts();renderCategoryProducts();renderAdminProducts()}
+function deleteProduct(id){if(!confirm("Delete this product?"))return;products=products.filter(x=>x.id!==id);save();renderProducts();renderCategoryProducts();renderAdminProducts()}
+categoryMarkup("categoryGrid");categoryMarkup("categoryGrid2");renderProducts();renderCategoryProducts();
+</script></body></html>
